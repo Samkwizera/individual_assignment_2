@@ -6,12 +6,11 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // ─── Auth State Stream ──────────────────────────────────────────────────────
+
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   User? get currentUser => _auth.currentUser;
 
-  // ─── Sign Up ────────────────────────────────────────────────────────────────
   Future<UserModel> signUp({
     required String email,
     required String password,
@@ -24,13 +23,9 @@ class AuthService {
 
     final user = credential.user!;
 
-    // Update display name in Firebase Auth
     await user.updateDisplayName(displayName.trim());
-
-    // Send email verification
     await user.sendEmailVerification();
 
-    // Create user profile in Firestore
     final userModel = UserModel(
       uid: user.uid,
       email: email.trim(),
@@ -46,7 +41,6 @@ class AuthService {
     return userModel;
   }
 
-  // ─── Sign In ────────────────────────────────────────────────────────────────
   Future<UserModel> signIn({
     required String email,
     required String password,
@@ -58,7 +52,6 @@ class AuthService {
 
     final user = credential.user!;
 
-    // Reload to get latest verification status
     await user.reload();
     final refreshed = _auth.currentUser!;
 
@@ -70,13 +63,11 @@ class AuthService {
       );
     }
 
-    // Fetch or create user profile
     final doc = await _firestore.collection('users').doc(refreshed.uid).get();
     if (doc.exists) {
       return UserModel.fromMap(doc.data()!, refreshed.uid);
     }
 
-    // Fallback: create profile if missing
     final userModel = UserModel(
       uid: refreshed.uid,
       email: refreshed.email ?? email.trim(),
@@ -91,12 +82,11 @@ class AuthService {
     return userModel;
   }
 
-  // ─── Sign Out ───────────────────────────────────────────────────────────────
+
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  // ─── Resend Verification Email ──────────────────────────────────────────────
   Future<void> resendVerificationEmail() async {
     final user = _auth.currentUser;
     if (user != null && !user.emailVerified) {
@@ -104,7 +94,6 @@ class AuthService {
     }
   }
 
-  // ─── Reload Current User ────────────────────────────────────────────────────
   Future<bool> reloadAndCheckVerification() async {
     final user = _auth.currentUser;
     if (user == null) return false;
@@ -112,14 +101,13 @@ class AuthService {
     return _auth.currentUser?.emailVerified ?? false;
   }
 
-  // ─── Fetch User Profile ─────────────────────────────────────────────────────
   Future<UserModel?> fetchUserProfile(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     if (!doc.exists) return null;
     return UserModel.fromMap(doc.data()!, uid);
   }
 
-  // ─── Password Reset ─────────────────────────────────────────────────────────
+
   Future<void> sendPasswordResetEmail(String email) async {
     await _auth.sendPasswordResetEmail(email: email.trim());
   }

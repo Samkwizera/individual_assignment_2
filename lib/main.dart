@@ -14,9 +14,7 @@ import 'screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const KigaliCityDirectoryApp());
 }
 
@@ -27,12 +25,9 @@ class KigaliCityDirectoryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // ── Auth Provider ──────────────────────────────────────────────────
         ChangeNotifierProvider<app_auth.AuthProvider>(
           create: (_) => app_auth.AuthProvider(AuthService()),
         ),
-
-        // ── Listing Provider ───────────────────────────────────────────────
         ChangeNotifierProvider<ListingProvider>(
           create: (_) => ListingProvider(ListingService(), ReviewService()),
         ),
@@ -47,7 +42,6 @@ class KigaliCityDirectoryApp extends StatelessWidget {
   }
 }
 
-// ─── App Router: Handles Auth State Navigation ─────────────────────────────
 class AppRouter extends StatelessWidget {
   const AppRouter({super.key});
 

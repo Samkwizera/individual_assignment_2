@@ -1,17 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// IMPORTANT: This file is a TEMPLATE.
-// Replace ALL placeholder values with your actual Firebase project credentials.
-//
-// HOW TO GENERATE THIS FILE AUTOMATICALLY:
-//   1. Install FlutterFire CLI:       dart pub global activate flutterfire_cli
-//   2. Login to Firebase:             firebase login
-//   3. Run in your project root:      flutterfire configure
-//   4. Follow the prompts to select your Firebase project.
-//   5. The tool will overwrite this file with correct values.
-//
-// OR fill in manually from your Firebase Console > Project Settings > Your apps.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
@@ -45,31 +31,30 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // ── Replace with values from Firebase Console ──────────────────────────────
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'YOUR_WEB_API_KEY',
     appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    messagingSenderId: '305942086980',
+    projectId: 'kigali-city--directory',
+    authDomain: 'kigali-city--directory.firebaseapp.com',
+    storageBucket: 'kigali-city--directory.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    apiKey: 'AIzaSyDi611DFLSoTXHEOnneQkyKUalTGBRuryE',
+    appId: '1:305942086980:android:007318f2854aacc7a28311',
+    messagingSenderId: '305942086980',
+    projectId: 'kigali-city--directory',
+    storageBucket: 'kigali-city--directory.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'YOUR_IOS_API_KEY',
     appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    messagingSenderId: '305942086980',
+    projectId: 'kigali-city--directory',
+    storageBucket: 'kigali-city--directory.firebasestorage.app',
     iosClientId: 'YOUR_IOS_CLIENT_ID',
-    iosBundleId: 'com.kigali.kigali_city_directory',
+    iosBundleId: 'com.kigali.kigaliCityDirectory',
   );
 }

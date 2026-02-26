@@ -5,7 +5,6 @@ class ReviewService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   static const String _col = 'reviews';
 
-  // ─── Stream Reviews for a Listing ──────────────────────────────────────────
   Stream<List<ReviewModel>> streamReviews(String listingId) {
     return _db
         .collection(_col)
@@ -16,12 +15,11 @@ class ReviewService {
             snap.docs.map((d) => ReviewModel.fromFirestore(d)).toList());
   }
 
-  // ─── Add Review ─────────────────────────────────────────────────────────────
+
   Future<void> addReview(ReviewModel review) async {
     await _db.collection(_col).add(review.toMap());
   }
 
-  // ─── Check if User Already Reviewed ────────────────────────────────────────
   Future<bool> hasUserReviewed(String listingId, String userId) async {
     final snap = await _db
         .collection(_col)
@@ -32,7 +30,7 @@ class ReviewService {
     return snap.docs.isNotEmpty;
   }
 
-  // ─── Get Average Rating ─────────────────────────────────────────────────────
+
   Future<Map<String, dynamic>> getAverageRating(String listingId) async {
     final snap = await _db
         .collection(_col)
