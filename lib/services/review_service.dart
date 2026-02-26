@@ -11,10 +11,10 @@ class ReviewService {
         .where('listingId', isEqualTo: listingId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => ReviewModel.fromFirestore(d)).toList());
+        .map(
+          (snap) => snap.docs.map((d) => ReviewModel.fromFirestore(d)).toList(),
+        );
   }
-
 
   Future<void> addReview(ReviewModel review) async {
     await _db.collection(_col).add(review.toMap());
@@ -29,7 +29,6 @@ class ReviewService {
         .get();
     return snap.docs.isNotEmpty;
   }
-
 
   Future<Map<String, dynamic>> getAverageRating(String listingId) async {
     final snap = await _db

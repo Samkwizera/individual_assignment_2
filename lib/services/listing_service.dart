@@ -10,8 +10,10 @@ class ListingService {
         .collection(_col)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => ListingModel.fromFirestore(d)).toList());
+        .map(
+          (snap) =>
+              snap.docs.map((d) => ListingModel.fromFirestore(d)).toList(),
+        );
   }
 
   Stream<List<ListingModel>> streamUserListings(String uid) {
@@ -20,8 +22,10 @@ class ListingService {
         .where('createdBy', isEqualTo: uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => ListingModel.fromFirestore(d)).toList());
+        .map(
+          (snap) =>
+              snap.docs.map((d) => ListingModel.fromFirestore(d)).toList(),
+        );
   }
 
   Stream<List<ListingModel>> streamListingsByCategory(String category) {
@@ -31,21 +35,20 @@ class ListingService {
         .where('category', isEqualTo: category)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => ListingModel.fromFirestore(d)).toList());
+        .map(
+          (snap) =>
+              snap.docs.map((d) => ListingModel.fromFirestore(d)).toList(),
+        );
   }
-
 
   Future<String> createListing(ListingModel listing) async {
     final docRef = await _db.collection(_col).add(listing.toMap());
     return docRef.id;
   }
 
-
   Future<void> updateListing(String id, Map<String, dynamic> data) async {
     await _db.collection(_col).doc(id).update(data);
   }
-
 
   Future<void> deleteListing(String id) async {
     final reviews = await _db
@@ -61,16 +64,17 @@ class ListingService {
     await batch.commit();
   }
 
-
   Future<ListingModel?> getListing(String id) async {
     final doc = await _db.collection(_col).doc(id).get();
     if (!doc.exists) return null;
     return ListingModel.fromFirestore(doc);
   }
 
-
   Future<void> updateListingRating(
-      String listingId, double newRating, int newReviewCount) async {
+    String listingId,
+    double newRating,
+    int newReviewCount,
+  ) async {
     await _db.collection(_col).doc(listingId).update({
       'rating': newRating,
       'reviewCount': newReviewCount,

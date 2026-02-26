@@ -6,7 +6,6 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   User? get currentUser => _auth.currentUser;
@@ -33,10 +32,7 @@ class AuthService {
       createdAt: DateTime.now(),
     );
 
-    await _firestore
-        .collection('users')
-        .doc(user.uid)
-        .set(userModel.toMap());
+    await _firestore.collection('users').doc(user.uid).set(userModel.toMap());
 
     return userModel;
   }
@@ -82,7 +78,6 @@ class AuthService {
     return userModel;
   }
 
-
   Future<void> signOut() async {
     await _auth.signOut();
   }
@@ -106,7 +101,6 @@ class AuthService {
     if (!doc.exists) return null;
     return UserModel.fromMap(doc.data()!, uid);
   }
-
 
   Future<void> sendPasswordResetEmail(String email) async {
     await _auth.sendPasswordResetEmail(email: email.trim());
