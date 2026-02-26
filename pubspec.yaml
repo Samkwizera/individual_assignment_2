@@ -1,0 +1,48 @@
+name: kigali_city_directory
+description: Kigali City Services & Places Directory - A Flutter app to help residents find and navigate to essential public services and lifestyle locations.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+
+  # State Management
+  provider: ^6.1.2
+
+  # Maps & Location
+  google_maps_flutter: ^2.9.0
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+
+  # URL Launcher (for Google Maps navigation)
+  url_launcher: ^6.3.1
+
+  # UI Packages
+  flutter_rating_bar: ^4.0.1
+  shimmer: ^3.0.0
+
+  # Utilities
+  intl: ^0.19.0
+  shared_preferences: ^2.3.3
+  uuid: ^4.5.1
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
