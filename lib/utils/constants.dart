@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // ─── App Colors ───────────────────────────────────────────────────────────────
 class AppColors {
@@ -173,4 +174,24 @@ const Map<String, IconData> kCategoryIcons = {
   'School': Icons.school_rounded,
   'Bank': Icons.account_balance_rounded,
   'Utility Office': Icons.electrical_services_rounded,
+};
+
+// ─── Mapbox ──────────────────────────────────────────────────────────────────
+String get mapboxAccessToken => dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
+
+String get mapboxDarkTileUrl =>
+    'https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}@2x?access_token=$mapboxAccessToken';
+
+const Map<String, Color> kCategoryColors = {
+  'Hospital': Color(0xFFEF5350),
+  'Police Station': Color(0xFF42A5F5),
+  'Library': Color(0xFF66BB6A),
+  'Restaurant': Color(0xFFFFA726),
+  'Café': Color(0xFFFFEE58),
+  'Park': Color(0xFF26C6DA),
+  'Tourist Attraction': Color(0xFFAB47BC),
+  'Pharmacy': Color(0xFFEC407A),
+  'School': Color(0xFF5C6BC0),
+  'Bank': Color(0xFF78909C),
+  'Utility Office': Color(0xFF8D6E63),
 };

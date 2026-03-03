@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../models/listing_model.dart';
 import '../../providers/auth_provider.dart';
@@ -27,7 +28,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
   late final TextEditingController _lngCtrl;
 
   String _selectedCategory = kCategories[1]; // default: Hospital
-  GoogleMapController? _mapController;
+  final MapController _mapController = MapController();
   LatLng? _pickedLocation;
 
   bool get _isEditing => widget.listing != null;
@@ -80,21 +81,20 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
         locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.medium),
       );
+      final newLoc = LatLng(pos.latitude, pos.longitude);
       setState(() {
-        _pickedLocation = LatLng(pos.latitude, pos.longitude);
+        _pickedLocation = newLoc;
         _latCtrl.text = pos.latitude.toStringAsFixed(6);
         _lngCtrl.text = pos.longitude.toStringAsFixed(6);
       });
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(_pickedLocation!, 16),
-      );
+      _mapController.move(newLoc, 16);
     } catch (e) {
       _showSnack('Could not get location. Enter coordinates manually.',
           isError: true);
     }
   }
 
-  void _onMapTap(LatLng latlng) {
+  void _onMapTap(TapPosition tapPosition, LatLng latlng) {
     setState(() {
       _pickedLocation = latlng;
       _latCtrl.text = latlng.latitude.toStringAsFixed(6);
@@ -418,26 +418,39 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                       height: 240,
                       child: Stack(
                         children: [
-                          GoogleMap(
-                            initialCameraPosition: CameraPosition(
-                              target: _pickedLocation ??
+                          FlutterMap(
+                            mapController: _mapController,
+                            options: MapOptions(
+                              initialCenter: _pickedLocation ??
                                   const LatLng(-1.9441, 30.0619),
-                              zoom: 13.5,
+                              initialZoom: 13.5,
+                              onTap: _onMapTap,
                             ),
-                            onMapCreated: (c) => _mapController = c,
-                            onTap: _onMapTap,
-                            markers: _pickedLocation != null
-                                ? {
+                            children: [
+                              TileLayer(
+                                urlTemplate: mapboxDarkTileUrl,
+                                userAgentPackageName:
+                                    'com.kigali.kigaliCityDirectory',
+                                maxZoom: 19,
+                                tileSize: 512,
+                                zoomOffset: -1,
+                              ),
+                              if (_pickedLocation != null)
+                                MarkerLayer(
+                                  markers: [
                                     Marker(
-                                      markerId: const MarkerId('picked'),
-                                      position: _pickedLocation!,
-                                      draggable: true,
-                                      onDragEnd: _onMapTap,
+                                      point: _pickedLocation!,
+                                      width: 40,
+                                      height: 40,
+                                      child: const Icon(
+                                        Icons.location_on,
+                                        color: AppColors.accent,
+                                        size: 40,
+                                      ),
                                     ),
-                                  }
-                                : {},
-                            zoomControlsEnabled: false,
-                            myLocationButtonEnabled: false,
+                                  ],
+                                ),
+                            ],
                           ),
                           // Tap hint overlay
                           if (_pickedLocation == null)

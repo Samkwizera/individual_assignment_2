@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../providers/listing_provider.dart';
 import '../../models/listing_model.dart';
 import '../../utils/constants.dart';
@@ -15,63 +16,43 @@ class MapViewScreen extends StatefulWidget {
 }
 
 class _MapViewScreenState extends State<MapViewScreen> {
-  GoogleMapController? _mapController;
+  final MapController _mapController = MapController();
   ListingModel? _selectedListing;
 
-  // Default camera: Kigali City Centre
-  static const CameraPosition _kigaliCenter = CameraPosition(
-    target: LatLng(-1.9441, 30.0619),
-    zoom: 13.5,
-  );
+  static const LatLng _kigaliCenter = LatLng(-1.9441, 30.0619);
+  static const double _defaultZoom = 13.5;
 
-  Set<Marker> _buildMarkers(List<ListingModel> listings) {
+  List<Marker> _buildMarkers(List<ListingModel> listings) {
     return listings.map((l) {
+      final color = kCategoryColors[l.category] ?? AppColors.accent;
+      final icon = kCategoryIcons[l.category] ?? Icons.place_rounded;
       return Marker(
-        markerId: MarkerId(l.id),
-        position: LatLng(l.latitude, l.longitude),
-        infoWindow: InfoWindow(
-          title: l.name,
-          snippet: '${l.category} • ${l.address}',
-        ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          _categoryHue(l.category),
-        ),
-        onTap: () {
-          setState(() => _selectedListing = l);
-          _mapController?.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: LatLng(l.latitude, l.longitude),
-                zoom: 16,
-              ),
+        point: LatLng(l.latitude, l.longitude),
+        width: 38,
+        height: 38,
+        child: GestureDetector(
+          onTap: () {
+            setState(() => _selectedListing = l);
+            _mapController.move(LatLng(l.latitude, l.longitude), 16);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.5),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          );
-        },
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+        ),
       );
-    }).toSet();
-  }
-
-  double _categoryHue(String category) {
-    switch (category) {
-      case 'Hospital':
-        return BitmapDescriptor.hueRed;
-      case 'Police Station':
-        return BitmapDescriptor.hueBlue;
-      case 'Library':
-        return BitmapDescriptor.hueGreen;
-      case 'Restaurant':
-        return BitmapDescriptor.hueOrange;
-      case 'Café':
-        return BitmapDescriptor.hueYellow;
-      case 'Park':
-        return BitmapDescriptor.hueCyan;
-      case 'Tourist Attraction':
-        return BitmapDescriptor.hueMagenta;
-      case 'Pharmacy':
-        return BitmapDescriptor.hueRose;
-      default:
-        return BitmapDescriptor.hueViolet;
-    }
+    }).toList();
   }
 
   @override
@@ -86,33 +67,36 @@ class _MapViewScreenState extends State<MapViewScreen> {
           IconButton(
             icon: const Icon(Icons.my_location_rounded),
             onPressed: () {
-              _mapController?.animateCamera(
-                CameraUpdate.newCameraPosition(_kigaliCenter),
-              );
+              _mapController.move(_kigaliCenter, _defaultZoom);
             },
           ),
         ],
       ),
       body: Stack(
         children: [
-          // ── Google Map ────────────────────────────────────────────────────
+          // ── Map ──────────────────────────────────────────────────────────
           listingProv.isLoading
               ? const AppLoadingIndicator()
-              : GoogleMap(
-                  initialCameraPosition: _kigaliCenter,
-                  markers: _buildMarkers(listings),
-                  mapType: MapType.normal,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  onMapCreated: (controller) {
-                    _mapController = controller;
-                    controller.setMapStyle(_mapStyle);
-                  },
-                  onTap: (_) => setState(() => _selectedListing = null),
+              : FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: _kigaliCenter,
+                    initialZoom: _defaultZoom,
+                    onTap: (_, __) => setState(() => _selectedListing = null),
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: mapboxDarkTileUrl,
+                      userAgentPackageName: 'com.kigali.kigaliCityDirectory',
+                      maxZoom: 19,
+                      tileSize: 512,
+                      zoomOffset: -1,
+                    ),
+                    MarkerLayer(markers: _buildMarkers(listings)),
+                  ],
                 ),
 
-          // ── Category Filter Overlay ───────────────────────────────────────
+          // ── Category Filter Overlay ─────────────────────────────────────
           Positioned(
             top: 12,
             left: 0,
@@ -164,7 +148,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             ),
           ),
 
-          // ── Count Badge ───────────────────────────────────────────────────
+          // ── Count Badge ─────────────────────────────────────────────────
           Positioned(
             top: 58,
             left: 16,
@@ -192,7 +176,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             ),
           ),
 
-          // ── Selected Listing Card ─────────────────────────────────────────
+          // ── Selected Listing Card ───────────────────────────────────────
           if (_selectedListing != null)
             Positioned(
               bottom: 16,
@@ -214,19 +198,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
       ),
     );
   }
-
-  // Dark map style to match app theme
-  static const String _mapStyle = '''
-  [
-    {"elementType": "geometry", "stylers": [{"color": "#1a1a2e"}]},
-    {"elementType": "labels.text.fill", "stylers": [{"color": "#8892a4"}]},
-    {"elementType": "labels.text.stroke", "stylers": [{"color": "#0a1628"}]},
-    {"featureType": "road", "elementType": "geometry", "stylers": [{"color": "#162033"}]},
-    {"featureType": "road.highway", "elementType": "geometry", "stylers": [{"color": "#1c2b42"}]},
-    {"featureType": "water", "elementType": "geometry", "stylers": [{"color": "#0d1f33"}]},
-    {"featureType": "poi.park", "elementType": "geometry", "stylers": [{"color": "#0d2a1a"}]}
-  ]
-  ''';
 }
 
 class _SelectedListingCard extends StatelessWidget {

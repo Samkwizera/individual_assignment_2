@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
@@ -23,7 +24,6 @@ class AuthService {
     final user = credential.user!;
 
     await user.updateDisplayName(displayName.trim());
-    await user.sendEmailVerification();
 
     final userModel = UserModel(
       uid: user.uid,
@@ -32,7 +32,11 @@ class AuthService {
       createdAt: DateTime.now(),
     );
 
-    await _firestore.collection('users').doc(user.uid).set(userModel.toMap());
+    try {
+      await _firestore.collection('users').doc(user.uid).set(userModel.toMap());
+    } catch (e) {
+      debugPrint('Firestore write failed during sign-up: $e');
+    }
 
     return userModel;
   }
@@ -48,34 +52,32 @@ class AuthService {
 
     final user = credential.user!;
 
-    await user.reload();
-    final refreshed = _auth.currentUser!;
+    try {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data()!, user.uid);
+      }
 
-    if (!refreshed.emailVerified) {
-      throw FirebaseAuthException(
-        code: 'email-not-verified',
-        message:
-            'Please verify your email before signing in. Check your inbox.',
+      final userModel = UserModel(
+        uid: user.uid,
+        email: user.email ?? email.trim(),
+        displayName: user.displayName ?? email.split('@').first,
+        createdAt: DateTime.now(),
+      );
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .set(userModel.toMap());
+      return userModel;
+    } catch (e) {
+      debugPrint('Firestore operation failed during sign-in: $e');
+      return UserModel(
+        uid: user.uid,
+        email: user.email ?? email.trim(),
+        displayName: user.displayName ?? email.split('@').first,
+        createdAt: DateTime.now(),
       );
     }
-
-    final doc = await _firestore.collection('users').doc(refreshed.uid).get();
-    if (doc.exists) {
-      return UserModel.fromMap(doc.data()!, refreshed.uid);
-    }
-
-    final userModel = UserModel(
-      uid: refreshed.uid,
-      email: refreshed.email ?? email.trim(),
-      displayName: refreshed.displayName ?? email.split('@').first,
-      createdAt: DateTime.now(),
-    );
-    await _firestore
-        .collection('users')
-        .doc(refreshed.uid)
-        .set(userModel.toMap());
-
-    return userModel;
   }
 
   Future<void> signOut() async {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 
 enum AuthStatus {
   unknown,
   unauthenticated,
-  unverified,
   authenticated,
 }
 
@@ -35,21 +35,18 @@ class AuthProvider extends ChangeNotifier {
         _status = AuthStatus.unauthenticated;
         _userModel = null;
       } else {
-        await user.reload();
-        final refreshed = FirebaseAuth.instance.currentUser!;
-        if (!refreshed.emailVerified) {
-          _status = AuthStatus.unverified;
-          _userModel = null;
-        } else {
-          _userModel = await _authService.fetchUserProfile(refreshed.uid);
-          _userModel ??= UserModel(
-            uid: refreshed.uid,
-            email: refreshed.email ?? '',
-            displayName: refreshed.displayName ?? '',
-            createdAt: DateTime.now(),
-          );
-          _status = AuthStatus.authenticated;
+        try {
+          _userModel = await _authService.fetchUserProfile(user.uid);
+        } catch (e) {
+          debugPrint('Failed to fetch user profile: $e');
         }
+        _userModel ??= UserModel(
+          uid: user.uid,
+          email: user.email ?? '',
+          displayName: user.displayName ?? '',
+          createdAt: DateTime.now(),
+        );
+        _status = AuthStatus.authenticated;
       }
       notifyListeners();
     });
@@ -69,14 +66,15 @@ class AuthProvider extends ChangeNotifier {
         password: password,
         displayName: displayName,
       );
-      _status = AuthStatus.unverified;
+      _status = AuthStatus.authenticated;
       notifyListeners();
       return true;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseException catch (e) {
       _setError(_authErrorMessage(e.code));
       return false;
     } catch (e) {
-      _setError('An unexpected error occurred. Please try again.');
+      debugPrint('Sign-up error: $e');
+      _setError(e.toString());
       return false;
     } finally {
       _setLoading(false);
@@ -95,15 +93,12 @@ class AuthProvider extends ChangeNotifier {
       _status = AuthStatus.authenticated;
       notifyListeners();
       return true;
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-not-verified') {
-        _status = AuthStatus.unverified;
-        notifyListeners();
-      }
+    } on FirebaseException catch (e) {
       _setError(_authErrorMessage(e.code));
       return false;
     } catch (e) {
-      _setError('An unexpected error occurred. Please try again.');
+      debugPrint('Sign-in error: $e');
+      _setError(e.toString());
       return false;
     } finally {
       _setLoading(false);
@@ -162,7 +157,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _authService.sendPasswordResetEmail(email);
       return true;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseException catch (e) {
       _setError(_authErrorMessage(e.code));
       return false;
     } finally {

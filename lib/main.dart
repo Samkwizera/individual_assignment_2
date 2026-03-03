@@ -10,7 +10,7 @@ import 'services/listing_service.dart';
 import 'services/review_service.dart';
 import 'utils/constants.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/auth/email_verification_screen.dart';
+
 import 'screens/home/home_screen.dart';
 
 void main() async {
@@ -57,11 +57,6 @@ class AppRouter extends StatelessWidget {
 
       case app_auth.AuthStatus.unauthenticated:
         return const LoginScreen();
-
-      case app_auth.AuthStatus.unverified:
-        return EmailVerificationScreen(
-          email: authProv.userModel?.email ?? 'your registered email',
-        );
 
       case app_auth.AuthStatus.authenticated:
         return const HomeScreen();

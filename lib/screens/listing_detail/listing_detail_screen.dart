@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import '../../models/listing_model.dart';
@@ -27,7 +28,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
   void initState() {
     super.initState();
     _listing = widget.listing;
-    // Subscribe to real-time reviews for this listing
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ListingProvider>().subscribeToReviews(_listing.id);
     });
@@ -51,7 +51,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Could not launch Google Maps navigation.'),
+            content: Text('Could not launch navigation.'),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -146,9 +146,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                                         .read<ListingProvider>()
                                         .errorMessage ??
                                     'Failed to submit review.'),
-                            backgroundColor: success
-                                ? AppColors.success
-                                : AppColors.error,
+                            backgroundColor:
+                                success ? AppColors.success : AppColors.error,
                             behavior: SnackBarBehavior.floating,
                           ));
                         }
@@ -158,8 +157,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: AppColors.background),
+                            strokeWidth: 2.5, color: AppColors.background),
                       )
                     : const Text('Submit Review'),
               ),
@@ -177,7 +175,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     final isOwner = authProv.userModel?.uid == _listing.createdBy;
     final reviews = listingProv.currentReviews;
 
-    // Keep listing in sync from provider if updated
     final updated = listingProv.getListingById(_listing.id);
     if (updated != null) _listing = updated;
 
@@ -208,25 +205,20 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               itemBuilder: (_) => [
                 const PopupMenuItem(
                   value: 'edit',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_rounded, color: AppColors.accent, size: 18),
-                      SizedBox(width: 10),
-                      Text('Edit', style: TextStyle(color: AppColors.textPrimary)),
-                    ],
-                  ),
+                  child: Row(children: [
+                    Icon(Icons.edit_rounded, color: AppColors.accent, size: 18),
+                    SizedBox(width: 10),
+                    Text('Edit', style: TextStyle(color: AppColors.textPrimary)),
+                  ]),
                 ),
                 const PopupMenuItem(
                   value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline_rounded,
-                          color: AppColors.error, size: 18),
-                      SizedBox(width: 10),
-                      Text('Delete',
-                          style: TextStyle(color: AppColors.error)),
-                    ],
-                  ),
+                  child: Row(children: [
+                    Icon(Icons.delete_outline_rounded,
+                        color: AppColors.error, size: 18),
+                    SizedBox(width: 10),
+                    Text('Delete', style: TextStyle(color: AppColors.error)),
+                  ]),
                 ),
               ],
             ),
@@ -236,28 +228,62 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Map Section ───────────────────────────────────────────────
+            // ── Map Preview ───────────────────────────────────────────────
             SizedBox(
               height: 220,
               child: Stack(
                 children: [
-                  GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(_listing.latitude, _listing.longitude),
-                      zoom: 16,
-                    ),
-                    markers: {
-                      Marker(
-                        markerId: MarkerId(_listing.id),
-                        position: LatLng(_listing.latitude, _listing.longitude),
-                        infoWindow: InfoWindow(title: _listing.name),
+                  FlutterMap(
+                    options: MapOptions(
+                      initialCenter:
+                          LatLng(_listing.latitude, _listing.longitude),
+                      initialZoom: 16,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none,
                       ),
-                    },
-                    zoomControlsEnabled: false,
-                    scrollGesturesEnabled: false,
-                    rotateGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
-                    myLocationButtonEnabled: false,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: mapboxDarkTileUrl,
+                        userAgentPackageName: 'com.kigali.kigaliCityDirectory',
+                        maxZoom: 19,
+                        tileSize: 512,
+                        zoomOffset: -1,
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(_listing.latitude, _listing.longitude),
+                            width: 40,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: kCategoryColors[_listing.category] ??
+                                    AppColors.accent,
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (kCategoryColors[_listing.category] ??
+                                            AppColors.accent)
+                                        .withOpacity(0.5),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                kCategoryIcons[_listing.category] ??
+                                    Icons.place_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   // Navigate button overlay
                   Positioned(
@@ -338,11 +364,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Name
                   Text(_listing.name, style: AppTextStyles.heading1),
                   const SizedBox(height: 8),
 
-                  // Rating
                   if (_listing.reviewCount > 0) ...[
                     Row(
                       children: [
@@ -350,16 +374,14 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                         const SizedBox(width: 8),
                         Text(
                           '${_listing.rating.toStringAsFixed(1)} (${_listing.reviewCount} reviews)',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.accent,
-                          ),
+                          style: AppTextStyles.caption
+                              .copyWith(color: AppColors.accent),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                   ],
 
-                  // Description
                   Text(
                     _listing.description,
                     style: AppTextStyles.bodySecondary.copyWith(height: 1.6),
@@ -369,7 +391,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   const Divider(),
                   const SizedBox(height: 12),
 
-                  // Info rows
                   _InfoRow(
                     icon: Icons.location_on_rounded,
                     label: 'Address',
@@ -399,11 +420,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Rate this service button
                   ElevatedButton.icon(
-                    onPressed: authProv.isAuthenticated
-                        ? _showReviewDialog
-                        : null,
+                    onPressed:
+                        authProv.isAuthenticated ? _showReviewDialog : null,
                     icon: const Icon(Icons.star_rounded, size: 18),
                     label: const Text('Rate This Service'),
                   ),
@@ -419,7 +438,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
 
                   const SizedBox(height: 28),
 
-                  // ── Reviews Section ──────────────────────────────────────
+                  // ── Reviews ──────────────────────────────────────────────
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -462,9 +481,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                           ),
                         )
                       : Column(
-                          children: reviews
-                              .map((r) => _ReviewCard(review: r))
-                              .toList(),
+                          children:
+                              reviews.map((r) => _ReviewCard(review: r)).toList(),
                         ),
 
                   const SizedBox(height: 40),
@@ -501,9 +519,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               if (mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(success
-                      ? 'Listing deleted.'
-                      : 'Failed to delete listing.'),
+                  content: Text(
+                      success ? 'Listing deleted.' : 'Failed to delete listing.'),
                   backgroundColor:
                       success ? AppColors.success : AppColors.error,
                   behavior: SnackBarBehavior.floating,
@@ -621,7 +638,9 @@ class _ReviewCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(review.userName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+                    Text(review.userName,
+                        style: AppTextStyles.body
+                            .copyWith(fontWeight: FontWeight.w600)),
                     Text(
                       DateFormat('MMM d, yyyy').format(review.createdAt),
                       style: AppTextStyles.caption,
