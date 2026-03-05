@@ -53,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // ── Profile Section ───────────────────────────────────────────
+
               Container(
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(20),
@@ -64,7 +64,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Avatar
                     Container(
                       width: 80,
                       height: 80,
@@ -137,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
 
-              // ── Notifications Section ─────────────────────────────────────
+
               _SectionHeader(title: 'Notifications'),
               _SettingsTile(
                 icon: Icons.location_on_rounded,
@@ -182,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
 
-              // ── App Section ───────────────────────────────────────────────
+
               _SectionHeader(title: 'App'),
               _SettingsTile(
                 icon: Icons.info_outline_rounded,
@@ -197,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {},
               ),
 
-              // ── Account Section ───────────────────────────────────────────
+
               _SectionHeader(title: 'Account'),
               _SettingsTile(
                 icon: Icons.logout_rounded,

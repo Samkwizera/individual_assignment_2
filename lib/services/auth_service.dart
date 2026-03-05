@@ -64,10 +64,7 @@ class AuthService {
         displayName: user.displayName ?? email.split('@').first,
         createdAt: DateTime.now(),
       );
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .set(userModel.toMap());
+      await _firestore.collection('users').doc(user.uid).set(userModel.toMap());
       return userModel;
     } catch (e) {
       debugPrint('Firestore operation failed during sign-in: $e');
@@ -94,7 +91,18 @@ class AuthService {
   Future<bool> reloadAndCheckVerification() async {
     final user = _auth.currentUser;
     if (user == null) return false;
-    await user.reload();
+    try {
+      await user.reload();
+    } catch (e) {
+      debugPrint('user.reload() failed: $e');
+      final code = e.toString();
+      if (code.contains('user-token-expired') ||
+          code.contains('token-expired') ||
+          code.contains('user-not-found')) {
+        await _auth.signOut();
+      }
+      return false;
+    }
     return _auth.currentUser?.emailVerified ?? false;
   }
 

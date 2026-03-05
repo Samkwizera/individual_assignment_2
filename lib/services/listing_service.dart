@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/listing_model.dart';
 
 class ListingService {
@@ -42,12 +44,20 @@ class ListingService {
   }
 
   Future<String> createListing(ListingModel listing) async {
-    final docRef = await _db.collection(_col).add(listing.toMap());
+    final docRef = _db.collection(_col).doc();
+    unawaited(
+      docRef.set(listing.toMap()).catchError((Object e) {
+        debugPrint('[ListingService] createListing error: $e');
+      }),
+    );
     return docRef.id;
   }
 
   Future<void> updateListing(String id, Map<String, dynamic> data) async {
-    await _db.collection(_col).doc(id).update(data);
+    await _db.collection(_col).doc(id).update({
+      ...data,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   Future<void> deleteListing(String id) async {

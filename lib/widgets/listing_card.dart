@@ -28,7 +28,6 @@ class ListingCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Category Icon Box
             Container(
               width: 52,
               height: 52,
@@ -43,7 +42,6 @@ class ListingCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +101,6 @@ class ListingCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Distance + Arrow
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -139,7 +136,7 @@ class ListingCard extends StatelessWidget {
   }
 }
 
-// ─── Compact Listing Card (for Near You section) ─────────────────────────────
+
 class CompactListingCard extends StatelessWidget {
   final ListingModel listing;
   final VoidCallback onTap;
@@ -158,8 +155,9 @@ class CompactListingCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 160,
+        height: 160,
         margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(14),
@@ -169,8 +167,8 @@ class CompactListingCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: AppColors.accent.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8),
@@ -181,25 +179,30 @@ class CompactListingCard extends StatelessWidget {
                 size: 18,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
             Text(
               listing.name,
               style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Row(
               children: [
-                const Icon(Icons.star_rounded,
-                    color: AppColors.accent, size: 12),
+                const Icon(
+                  Icons.star_rounded,
+                  color: AppColors.accent,
+                  size: 12,
+                ),
                 const SizedBox(width: 2),
                 Text(
                   listing.reviewCount > 0
                       ? listing.rating.toStringAsFixed(1)
                       : 'New',
-                  style: AppTextStyles.caption
-                      .copyWith(color: AppColors.accent, fontWeight: FontWeight.w600),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -210,6 +213,7 @@ class CompactListingCard extends StatelessWidget {
                     ? '${(distanceKm! * 1000).toStringAsFixed(0)} m'
                     : '${distanceKm!.toStringAsFixed(1)} km',
                 style: AppTextStyles.caption,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ],

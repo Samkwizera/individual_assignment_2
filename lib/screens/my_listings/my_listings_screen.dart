@@ -25,151 +25,156 @@ class MyListingsScreen extends StatelessWidget {
             icon: const Icon(Icons.add_circle_rounded, color: AppColors.accent),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (_) => const ListingFormScreen()),
+              MaterialPageRoute(builder: (_) => const ListingFormScreen()),
             ),
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // User info banner
-            if (authProv.userModel != null)
-              Container(
-                margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.card,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          authProv.userModel!.displayName.isNotEmpty
-                              ? authProv.userModel!.displayName[0]
-                                  .toUpperCase()
-                              : 'U',
-                          style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+      body: LoadingOverlay(
+        isLoading: listingProv.isSubmitting,
+        child: SafeArea(
+          child: Column(
+            children: [
+              if (authProv.userModel != null)
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            authProv.userModel!.displayName.isNotEmpty
+                                ? authProv.userModel!.displayName[0]
+                                      .toUpperCase()
+                                : 'U',
+                            style: const TextStyle(
+                              color: AppColors.accent,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            authProv.userModel!.displayName,
-                            style: AppTextStyles.heading3,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${myListings.length} listing${myListings.length != 1 ? 's' : ''} created',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.accent,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              authProv.userModel!.displayName,
+                              style: AppTextStyles.heading3,
                             ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${myListings.length} listing${myListings.length != 1 ? 's' : ''} created',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.accent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.add_rounded,
+                          color: AppColors.accent,
+                          size: 28,
+                        ),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ListingFormScreen(),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.add_rounded,
-                        color: AppColors.accent,
-                        size: 28,
-                      ),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const ListingFormScreen()),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
 
-            // Listings
-            Expanded(
-              child: listingProv.isLoading
-                  ? const AppLoadingIndicator()
-                  : myListings.isEmpty
-                      ? EmptyState(
-                          message:
-                              'You haven\'t added any listings yet.\nTap the + button to add your first one!',
-                          icon: Icons.add_location_alt_rounded,
-                          actionLabel: 'Add Listing',
-                          onAction: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const ListingFormScreen()),
+              Expanded(
+                child: listingProv.isUserListingsLoading
+                    ? const AppLoadingIndicator()
+                    : myListings.isEmpty
+                    ? EmptyState(
+                        message:
+                            'You haven\'t added any listings yet.\nTap the + button to add your first one!',
+                        icon: Icons.add_location_alt_rounded,
+                        actionLabel: 'Add Listing',
+                        onAction: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ListingFormScreen(),
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-                          itemCount: myListings.length,
-                          itemBuilder: (_, i) {
-                            final listing = myListings[i];
-                            return Stack(
-                              children: [
-                                ListingCard(
-                                  listing: listing,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ListingDetailScreen(
-                                          listing: listing),
-                                    ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                        itemCount: myListings.length,
+                        itemBuilder: (_, i) {
+                          final listing = myListings[i];
+                          return Stack(
+                            children: [
+                              ListingCard(
+                                listing: listing,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ListingDetailScreen(listing: listing),
                                   ),
                                 ),
-                                // Edit/Delete actions
-                                Positioned(
-                                  top: 12,
-                                  right: 12,
-                                  child: Row(
-                                    children: [
-                                      _ActionChip(
-                                        icon: Icons.edit_rounded,
-                                        color: AppColors.accent,
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => ListingFormScreen(
-                                                listing: listing),
+                              ),
+                              Positioned(
+                                top: 12,
+                                right: 12,
+                                child: Row(
+                                  children: [
+                                    _ActionChip(
+                                      icon: Icons.edit_rounded,
+                                      color: AppColors.accent,
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ListingFormScreen(
+                                            listing: listing,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 6),
-                                      _ActionChip(
-                                        icon: Icons.delete_outline_rounded,
-                                        color: AppColors.error,
-                                        onTap: () => _confirmDelete(
-                                            context, listing.id, listing.name),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    _ActionChip(
+                                      icon: Icons.delete_outline_rounded,
+                                      color: AppColors.error,
+                                      onTap: () => _confirmDelete(
+                                        context,
+                                        listing.id,
+                                        listing.name,
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            );
-                          },
-                        ),
-            ),
-          ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -184,8 +189,7 @@ class MyListingsScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(
-      BuildContext context, String listingId, String name) {
+  void _confirmDelete(BuildContext context, String listingId, String name) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -203,18 +207,24 @@ class MyListingsScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final success =
-                  await context.read<ListingProvider>().deleteListing(listingId);
+              final success = await context
+                  .read<ListingProvider>()
+                  .deleteListing(listingId);
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(success
-                      ? 'Listing deleted successfully.'
-                      : context.read<ListingProvider>().errorMessage ??
-                          'Failed to delete listing.'),
-                  backgroundColor:
-                      success ? AppColors.success : AppColors.error,
-                  behavior: SnackBarBehavior.floating,
-                ));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Listing deleted successfully.'
+                          : context.read<ListingProvider>().errorMessage ??
+                                'Failed to delete listing.',
+                    ),
+                    backgroundColor: success
+                        ? AppColors.success
+                        : AppColors.error,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(

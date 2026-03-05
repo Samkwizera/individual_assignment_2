@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 
-enum AuthStatus {
-  unknown,
-  unauthenticated,
-  authenticated,
-}
+enum AuthStatus { unknown, unauthenticated, authenticated }
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
@@ -27,8 +22,9 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
+  bool get isEmailVerified =>
+      FirebaseAuth.instance.currentUser?.emailVerified ?? false;
 
-  // ─── Init: Listen to Auth State ─────────────────────────────────────────────
   void _init() {
     _authService.authStateChanges.listen((User? user) async {
       if (user == null) {
@@ -52,7 +48,6 @@ class AuthProvider extends ChangeNotifier {
     });
   }
 
-  // ─── Sign Up ────────────────────────────────────────────────────────────────
   Future<bool> signUp({
     required String email,
     required String password,
@@ -68,7 +63,6 @@ class AuthProvider extends ChangeNotifier {
       );
       _status = AuthStatus.authenticated;
       notifyListeners();
-      return true;
     } on FirebaseException catch (e) {
       _setError(_authErrorMessage(e.code));
       return false;
@@ -79,13 +73,18 @@ class AuthProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+
+    try {
+      await _authService.resendVerificationEmail();
+    } on FirebaseException catch (e) {
+      _setError('Could not send verification email [${e.code}]: ${e.message}');
+    } catch (e) {
+      _setError('Could not send verification email: $e');
+    }
+    return true;
   }
 
-  // ─── Sign In ────────────────────────────────────────────────────────────────
-  Future<bool> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> signIn({required String email, required String password}) async {
     _setLoading(true);
     _clearError();
     try {
@@ -105,7 +104,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Sign Out ───────────────────────────────────────────────────────────────
   Future<void> signOut() async {
     _setLoading(true);
     try {
@@ -118,22 +116,23 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Resend Verification ────────────────────────────────────────────────────
   Future<bool> resendVerificationEmail() async {
     _setLoading(true);
     _clearError();
     try {
       await _authService.resendVerificationEmail();
       return true;
+    } on FirebaseException catch (e) {
+      _setError('Firebase error [${e.code}]: ${e.message}');
+      return false;
     } catch (e) {
-      _setError('Failed to resend verification email. Try again later.');
+      _setError('Error: $e');
       return false;
     } finally {
       _setLoading(false);
     }
   }
 
-  // ─── Check Verification ─────────────────────────────────────────────────────
   Future<bool> checkEmailVerification() async {
     _setLoading(true);
     try {
@@ -145,12 +144,14 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
       }
       return verified;
+    } catch (e) {
+      debugPrint('checkEmailVerification error: $e');
+      return false;
     } finally {
       _setLoading(false);
     }
   }
 
-  // ─── Password Reset ─────────────────────────────────────────────────────────
   Future<bool> sendPasswordReset(String email) async {
     _setLoading(true);
     _clearError();
@@ -165,7 +166,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────────
   void _setLoading(bool val) {
     _isLoading = val;
     notifyListeners();

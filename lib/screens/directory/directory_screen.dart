@@ -75,7 +75,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ───────────────────────────────────────────────────────
+
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
               child: Row(
@@ -106,7 +106,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               ),
             ),
 
-            // ── Category Filter ───────────────────────────────────────────────
+
             CategoryFilterBar(
               selected: listingProv.selectedCategory,
               categories: kCategories,
@@ -116,7 +116,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             ),
             const SizedBox(height: 14),
 
-            // ── Search Bar ────────────────────────────────────────────────────
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
@@ -143,7 +143,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ── Content ───────────────────────────────────────────────────────
+
             Expanded(
               child: listingProv.isLoading
                   ? const AppLoadingIndicator()
@@ -180,7 +180,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                                     const SizedBox(height: 20),
                                   ],
 
-                                  // All listings heading
                                   Padding(
                                     padding:
                                         const EdgeInsets.only(bottom: 12),
@@ -254,7 +253,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         const Text('Near You', style: AppTextStyles.heading2),
         const SizedBox(height: 12),
         SizedBox(
-          height: 140,
+          height: 160,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: nearbyShort.length,

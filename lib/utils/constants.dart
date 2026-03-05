@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// ─── App Colors ───────────────────────────────────────────────────────────────
 class AppColors {
   static const Color background   = Color(0xFF0A1628);
   static const Color surface      = Color(0xFF162033);
@@ -17,7 +16,6 @@ class AppColors {
   static const Color chipUnselected = Color(0xFF243049);
 }
 
-// ─── App Text Styles ──────────────────────────────────────────────────────────
 class AppTextStyles {
   static const TextStyle heading1 = TextStyle(
     color: AppColors.textPrimary,
@@ -54,7 +52,6 @@ class AppTextStyles {
   );
 }
 
-// ─── App Theme ────────────────────────────────────────────────────────────────
 ThemeData appTheme() {
   return ThemeData(
     scaffoldBackgroundColor: AppColors.background,
@@ -145,7 +142,6 @@ ThemeData appTheme() {
   );
 }
 
-// ─── Categories ───────────────────────────────────────────────────────────────
 const List<String> kCategories = [
   'All',
   'Hospital',
@@ -176,7 +172,6 @@ const Map<String, IconData> kCategoryIcons = {
   'Utility Office': Icons.electrical_services_rounded,
 };
 
-// ─── Mapbox ──────────────────────────────────────────────────────────────────
 String get mapboxAccessToken => dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
 
 String get mapboxDarkTileUrl =>

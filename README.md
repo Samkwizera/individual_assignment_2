@@ -1,140 +1,37 @@
 # Kigali City Directory
 
-A Flutter mobile application that helps Kigali residents locate and navigate to essential public services and lifestyle locations — hospitals, police stations, libraries, restaurants, cafes, parks, and tourist attractions.
+A Flutter app for finding and navigating to public services and places in Kigali — hospitals, police stations, libraries, restaurants, cafes, parks, and tourist spots. Users can browse listings, view them on a map, leave reviews, and add their own listings.
 
----
+## Getting started
 
-## Features
+### Prerequisites
 
-| Feature | Description |
-|---|---|
-| **Authentication** | Firebase Auth with email/password, email verification enforced |
-| **CRUD Listings** | Create, read, update, delete service listings in Cloud Firestore |
-| **Real-time Updates** | Listings update instantly across all screens via Firestore streams |
-| **Search & Filter** | Search by name/description; filter by category (dynamic, real-time) |
-| **Map Integration** | Embedded Google Maps with custom markers on detail and map view screens |
-| **Navigation** | One-tap Google Maps turn-by-turn directions launch |
-| **User Reviews** | Authenticated users can rate and review listings |
-| **Location Aware** | "Near You" section shows closest services using device GPS |
-| **Settings** | User profile display, notification preference toggles (local) |
+- Flutter SDK 3.0+
+- A Firebase project
+- A Mapbox account (for the map tiles)
 
----
+### Firebase setup
 
-## Architecture
-
-This app uses **Provider** for state management with a clean layered architecture:
-
-```
-lib/
-├── main.dart                      # App entry + AppRouter (auth state handler)
-├── firebase_options.dart          # Firebase configuration (replace with yours)
-│
-├── models/
-│   ├── user_model.dart            # UserModel (uid, email, displayName, createdAt)
-│   ├── listing_model.dart         # ListingModel (all listing fields)
-│   └── review_model.dart          # ReviewModel (rating, comment, userId)
-│
-├── services/                      # Pure Firebase API layer -- NO UI logic here
-│   ├── auth_service.dart          # Firebase Auth operations
-│   ├── listing_service.dart       # Firestore CRUD for listings
-│   └── review_service.dart        # Firestore operations for reviews
-│
-├── providers/                     # State management (Provider)
-│   ├── auth_provider.dart         # Auth state + operations exposed to UI
-│   └── listing_provider.dart      # Listing streams, CRUD, search, filter
-│
-├── screens/
-│   ├── auth/                      # Login, Signup, EmailVerification
-│   ├── home/                      # HomeScreen with BottomNavigationBar
-│   ├── directory/                 # Directory (browse all listings)
-│   ├── my_listings/               # User's own listings (edit/delete)
-│   ├── map_view/                  # Google Maps with all listing markers
-│   ├── settings/                  # User profile + notification preferences
-│   ├── listing_detail/            # Full listing details, map, reviews
-│   └── listing_form/              # Create / Edit listing form with map picker
-│
-├── widgets/
-│   ├── listing_card.dart          # Reusable listing card (full + compact)
-│   ├── category_filter_bar.dart   # Horizontal scrolling category chips
-│   ├── star_rating.dart           # Display + interactive star rating
-│   └── loading_overlay.dart       # Loading, empty state, error widgets
-│
-└── utils/
-    └── constants.dart             # Colors, text styles, theme, categories
-```
-
-### Data Flow
-```
-Firestore --> Service Layer --> Provider (ChangeNotifier) --> UI (Consumer/watch)
-```
-UI widgets **never** call Firebase directly. All Firestore operations go through a service, and the provider exposes the resulting state.
-
----
-
-## Firestore Database Structure
-
-```
-users/
-  {uid}/
-    email:          string
-    displayName:    string
-    createdAt:      timestamp
-
-listings/
-  {listingId}/
-    name:           string
-    category:       string         // Hospital | Police Station | Library | ...
-    address:        string
-    contactNumber:  string
-    description:    string
-    latitude:       number
-    longitude:      number
-    createdBy:      string         // user UID
-    createdByName:  string
-    createdAt:      timestamp
-    rating:         number         // computed average
-    reviewCount:    number
-
-reviews/
-  {reviewId}/
-    listingId:      string
-    userId:         string
-    userName:       string
-    rating:         number
-    comment:        string
-    createdAt:      timestamp
-```
-
----
-
-## Setup Instructions
-
-### 1. Prerequisites
-- Flutter SDK (3.0+)
-- Android Studio / VS Code
-- Firebase account
-- Google Cloud account (for Maps API)
-
-### 2. Firebase Setup
-1. Go to [Firebase Console](https://console.firebase.google.com) and create a new project
-2. Enable **Authentication** > Sign-in method > **Email/Password**
-3. Enable **Cloud Firestore** > Start in test mode
-4. Register your Android app with package name: `com.kigali.kigali_city_directory`
-5. Download `google-services.json` and place it in `android/app/`
+1. Create a project in the [Firebase Console](https://console.firebase.google.com)
+2. Enable Authentication > Email/Password sign-in
+3. Enable Cloud Firestore
+4. Register your Android app with package name `com.kigali.kigali_city_directory`
+5. Download `google-services.json` and put it in `android/app/`
 6. Run FlutterFire CLI to generate `firebase_options.dart`:
-   ```bash
+   ```
    dart pub global activate flutterfire_cli
    flutterfire configure
    ```
 
-### 3. Google Maps API Key
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Enable **Maps SDK for Android** and **Directions API**
-3. Create an API key and restrict it to your app package
-4. Replace `YOUR_GOOGLE_MAPS_API_KEY` in `android/app/build.gradle.kts`
+The app reads Firebase config at runtime from a `.env` file in the project root. Copy `.env.example` to `.env` and fill in your values.
 
-### 4. Firestore Security Rules
-```javascript
+### Mapbox
+
+Add your Mapbox access token to `.env` as `MAPBOX_ACCESS_TOKEN`. The map uses the Mapbox dark-v11 style.
+
+### Firestore security rules
+
+```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -155,33 +52,62 @@ service cloud.firestore {
 }
 ```
 
-### 5. Run the App
-```bash
+### Run
+
+```
 flutter pub get
 flutter run
 ```
 
----
+## Firestore collections
 
-## State Management: Provider
+**users**
+Stores a profile document for each registered user, created on sign-up.
+Fields: `email`, `displayName`, `createdAt`
 
-- `AuthProvider` wraps `AuthService`, exposes `AuthStatus` enum, `UserModel`, and loading/error states. Listens to `FirebaseAuth.authStateChanges` stream to react to login/logout automatically.
-- `ListingProvider` wraps `ListingService` and `ReviewService`, exposes real-time Firestore listing streams, computed filtered listings based on search + category, CRUD operations, and loading/error states.
+**listings**
+The main collection. Each document is a service or place listing.
+Fields: `name`, `category`, `address`, `contactNumber`, `description`, `latitude`, `longitude`, `createdBy` (uid), `createdByName`, `createdAt`, `updatedAt`, `rating` (computed average), `reviewCount`
 
-No Firestore calls exist inside any widget. All database interactions are in `services/` and exposed through `providers/`.
+Categories: Hospital, Police Station, Library, Restaurant, Cafe, Park, Tourist Attraction
 
----
+**reviews**
+One document per review, linked to a listing by `listingId`.
+Fields: `listingId`, `userId`, `userName`, `rating`, `comment`, `createdAt`
+
+The listings collection requires two composite indexes (category + createdAt, and createdBy + createdAt) for the queries used in the app. Firestore will prompt you with a link to create them the first time those queries run.
+
+## State management
+
+The app uses Provider. There are two providers:
+
+`AuthProvider` wraps `AuthService` and listens to `FirebaseAuth.authStateChanges`. It exposes the current auth status, user model, and loading/error states. The app router uses this to decide which screen to show — unauthenticated users go to login, authenticated but unverified users go to the email verification screen, verified users go to the main app.
+
+`ListingProvider` wraps `ListingService` and `ReviewService`. It manages two Firestore streams — one for all listings (used in the directory and map screens) and one for the current user's listings. It also handles search, category filtering, and all CRUD operations.
+
+No widget calls Firebase directly. All database access goes through the service layer, and state changes are exposed through the providers.
 
 ## Navigation
 
-Bottom Navigation Bar with 4 tabs:
-1. **Directory** - Browse/search all listings with category filters and near-you section
-2. **My Listings** - Manage your own listings with inline edit/delete actions
-3. **Map View** - All listings on an interactive dark-styled Google Map
-4. **Settings** - Profile info + notification preference toggles
+The main app has a bottom navigation bar with four tabs:
 
----
+- Directory — browse all listings with search and category filters; shows a "Near You" section when location permission is granted
+- My Listings — the current user's listings with edit and delete actions
+- Map View — all listings as markers on an interactive map; tap a marker to see a preview card
+- Settings — profile info and notification preference toggles
 
-## UI Theme
+Outside the tab structure there are also the listing detail screen (tap any listing card), the listing form screen (create or edit), and the auth screens (login, sign-up, email verification).
 
-Dark navy theme (`#0A1628`) with gold/amber accent (`#F5A623`) matching the Kigali City Directory design specification.
+## Project structure
+
+```
+lib/
+  main.dart                  # entry point, MultiProvider setup, AppRouter
+  firebase_options.dart      # generated by FlutterFire CLI
+  models/                    # plain Dart data classes (no logic)
+  services/                  # Firebase API calls only, no UI
+  providers/                 # ChangeNotifier classes, expose state to UI
+  screens/                   # one folder per screen
+  widgets/                   # shared UI components
+  utils/constants.dart       # colors, text styles, theme, category list
+```

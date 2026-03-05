@@ -74,7 +74,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
       ),
       body: Stack(
         children: [
-          // ── Map ──────────────────────────────────────────────────────────
+
           listingProv.isLoading
               ? const AppLoadingIndicator()
               : FlutterMap(
@@ -96,7 +96,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                   ],
                 ),
 
-          // ── Category Filter Overlay ─────────────────────────────────────
+
           Positioned(
             top: 12,
             left: 0,
@@ -148,7 +148,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             ),
           ),
 
-          // ── Count Badge ─────────────────────────────────────────────────
+
           Positioned(
             top: 58,
             left: 16,
@@ -176,7 +176,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             ),
           ),
 
-          // ── Selected Listing Card ───────────────────────────────────────
+
           if (_selectedListing != null)
             Positioned(
               bottom: 16,

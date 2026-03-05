@@ -10,7 +10,7 @@ import '../../utils/constants.dart';
 import '../../widgets/loading_overlay.dart';
 
 class ListingFormScreen extends StatefulWidget {
-  final ListingModel? listing; // null = create, non-null = edit
+  final ListingModel? listing;
 
   const ListingFormScreen({super.key, this.listing});
 
@@ -27,7 +27,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
   late final TextEditingController _latCtrl;
   late final TextEditingController _lngCtrl;
 
-  String _selectedCategory = kCategories[1]; // default: Hospital
+  String _selectedCategory = kCategories[1];
   final MapController _mapController = MapController();
   LatLng? _pickedLocation;
 
@@ -119,8 +119,6 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
     final listingProv = context.read<ListingProvider>();
     final user = authProv.userModel!;
 
-    bool success;
-
     if (_isEditing) {
       final data = {
         'name': _nameCtrl.text.trim(),
@@ -131,7 +129,20 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
         'latitude': lat,
         'longitude': lng,
       };
-      success = await listingProv.updateListing(widget.listing!.id, data);
+      final success = await listingProv.updateListing(widget.listing!.id, data);
+      if (!mounted) return;
+      if (success) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Listing updated successfully!'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+        ));
+      } else {
+        _showSnack(
+            listingProv.errorMessage ?? 'Failed. Please try again.',
+            isError: true);
+      }
     } else {
       final newListing = ListingModel(
         id: '',
@@ -146,23 +157,16 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
         createdByName: user.displayName,
         createdAt: DateTime.now(),
       );
-      success = await listingProv.createListing(newListing);
-    }
 
-    if (!mounted) return;
-    if (success) {
+      if (!mounted) return;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_isEditing
-            ? 'Listing updated successfully!'
-            : 'Listing created successfully!'),
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Listing created successfully!'),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
       ));
-    } else {
-      _showSnack(
-          listingProv.errorMessage ?? 'Failed. Please try again.',
-          isError: true);
+
+      listingProv.createListing(newListing);
     }
   }
 
@@ -209,11 +213,9 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Basic Info ─────────────────────────────────────────
                   _sectionLabel('Basic Information'),
                   const SizedBox(height: 12),
 
-                  // Name
                   TextFormField(
                     controller: _nameCtrl,
                     textCapitalization: TextCapitalization.words,
@@ -228,7 +230,6 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Category
                   _sectionLabel('Category'),
                   const SizedBox(height: 8),
                   Wrap(
@@ -271,7 +272,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ── Contact & Location ─────────────────────────────────
+
                   _sectionLabel('Location & Contact'),
                   const SizedBox(height: 12),
 
@@ -304,7 +305,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ── Description ────────────────────────────────────────
+
                   _sectionLabel('Description'),
                   const SizedBox(height: 12),
 
@@ -323,7 +324,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // ── GPS Coordinates ────────────────────────────────────
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -411,7 +412,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ── Map Picker ─────────────────────────────────────────
+
                   ClipRRect(
                     borderRadius: BorderRadius.circular(14),
                     child: SizedBox(
@@ -452,7 +453,6 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                                 ),
                             ],
                           ),
-                          // Tap hint overlay
                           if (_pickedLocation == null)
                             Positioned(
                               bottom: 12,
@@ -479,7 +479,7 @@ class _ListingFormScreenState extends State<ListingFormScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // ── Submit Button ──────────────────────────────────────
+
                   ElevatedButton(
                     onPressed: listingProv.isSubmitting ? null : _submit,
                     child: listingProv.isSubmitting

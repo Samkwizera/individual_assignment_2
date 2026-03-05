@@ -228,7 +228,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Map Preview ───────────────────────────────────────────────
             SizedBox(
               height: 220,
               child: Stack(
@@ -285,7 +284,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       ),
                     ],
                   ),
-                  // Navigate button overlay
                   Positioned(
                     right: 12,
                     bottom: 12,
@@ -327,13 +325,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               ),
             ),
 
-            // ── Details ───────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 4),
@@ -438,7 +434,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
 
                   const SizedBox(height: 28),
 
-                  // ── Reviews ──────────────────────────────────────────────
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

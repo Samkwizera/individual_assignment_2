@@ -92,7 +92,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Display Name
                 TextFormField(
                   controller: _nameCtrl,
                   textInputAction: TextInputAction.next,
@@ -114,7 +113,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Email
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
@@ -136,7 +134,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password
                 TextFormField(
                   controller: _passwordCtrl,
                   obscureText: _obscurePassword,
@@ -167,7 +164,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Confirm Password
                 TextFormField(
                   controller: _confirmCtrl,
                   obscureText: _obscureConfirm,
@@ -199,7 +195,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Sign Up Button
                 ElevatedButton(
                   onPressed: authProv.isLoading ? null : _signUp,
                   child: authProv.isLoading
@@ -216,7 +211,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Sign In Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

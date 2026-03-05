@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -10,14 +11,39 @@ import 'services/listing_service.dart';
 import 'services/review_service.dart';
 import 'utils/constants.dart';
 import 'screens/auth/login_screen.dart';
-
+import 'screens/auth/email_verification_screen.dart';
 import 'screens/home/home_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const KigaliCityDirectoryApp());
+void main() {
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await dotenv.load(fileName: '.env');
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      runApp(const KigaliCityDirectoryApp());
+    },
+    (error, stack) {
+      runApp(
+        MaterialApp(
+          home: Scaffold(
+            backgroundColor: const Color(0xFF0A1628),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  'Startup error:\n$error',
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class KigaliCityDirectoryApp extends StatelessWidget {
@@ -59,6 +85,11 @@ class AppRouter extends StatelessWidget {
         return const LoginScreen();
 
       case app_auth.AuthStatus.authenticated:
+        if (!authProv.isEmailVerified) {
+          return EmailVerificationScreen(
+            email: authProv.userModel?.email ?? '',
+          );
+        }
         return const HomeScreen();
     }
   }

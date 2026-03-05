@@ -16,6 +16,7 @@ class ListingProvider extends ChangeNotifier {
   String _searchQuery = '';
   String _selectedCategory = 'All';
   bool _isLoading = false;
+  bool _isUserListingsLoading = false;
   bool _isSubmitting = false;
   String? _errorMessage;
 
@@ -25,8 +26,8 @@ class ListingProvider extends ChangeNotifier {
 
   ListingProvider(this._listingService, this._reviewService);
 
-  // ─── Getters ─────────────────────────────────────────────────────────────────
   bool get isLoading => _isLoading;
+  bool get isUserListingsLoading => _isUserListingsLoading;
   bool get isSubmitting => _isSubmitting;
   String? get errorMessage => _errorMessage;
   String get searchQuery => _searchQuery;
@@ -34,18 +35,13 @@ class ListingProvider extends ChangeNotifier {
   List<ReviewModel> get currentReviews => _currentReviews;
   List<ListingModel> get userListings => _userListings;
 
-  // ─── Filtered Listings ───────────────────────────────────────────────────────
   List<ListingModel> get filteredListings {
     List<ListingModel> result = List.from(_allListings);
 
-    // Category filter
     if (_selectedCategory != 'All') {
-      result = result
-          .where((l) => l.category == _selectedCategory)
-          .toList();
+      result = result.where((l) => l.category == _selectedCategory).toList();
     }
 
-    // Search filter
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       result = result.where((l) {
@@ -59,7 +55,6 @@ class ListingProvider extends ChangeNotifier {
     return result;
   }
 
-  // ─── Subscribe to All Listings ───────────────────────────────────────────────
   void subscribeToAllListings() {
     _allListingsSub?.cancel();
     _isLoading = true;
@@ -80,56 +75,54 @@ class ListingProvider extends ChangeNotifier {
     );
   }
 
-  // ─── Subscribe to User Listings ──────────────────────────────────────────────
   void subscribeToUserListings(String uid) {
     _userListingsSub?.cancel();
-    _userListingsSub = _listingService.streamUserListings(uid).listen(
-      (listings) {
-        _userListings = listings;
-        notifyListeners();
-      },
-      onError: (_) {
-        notifyListeners();
-      },
-    );
+    _isUserListingsLoading = true;
+    notifyListeners();
+    _userListingsSub = _listingService
+        .streamUserListings(uid)
+        .listen(
+          (listings) {
+            _userListings = listings;
+            _isUserListingsLoading = false;
+            notifyListeners();
+          },
+          onError: (_) {
+            _isUserListingsLoading = false;
+            notifyListeners();
+          },
+        );
   }
 
-  // ─── Subscribe to Reviews ────────────────────────────────────────────────────
   void subscribeToReviews(String listingId) {
     _reviewsSub?.cancel();
-    _reviewsSub = _reviewService.streamReviews(listingId).listen(
-      (reviews) {
-        _currentReviews = reviews;
-        notifyListeners();
-      },
-    );
+    _reviewsSub = _reviewService.streamReviews(listingId).listen((reviews) {
+      _currentReviews = reviews;
+      notifyListeners();
+    });
   }
 
-  // ─── Cancel Review Subscription ──────────────────────────────────────────────
   void cancelReviewSubscription() {
     _reviewsSub?.cancel();
     _currentReviews = [];
   }
 
-  // ─── Search ──────────────────────────────────────────────────────────────────
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
   }
 
-  // ─── Filter by Category ──────────────────────────────────────────────────────
   void setCategory(String category) {
     _selectedCategory = category;
     notifyListeners();
   }
 
-  // ─── Create Listing ──────────────────────────────────────────────────────────
   Future<bool> createListing(ListingModel listing) async {
     _isSubmitting = true;
     _errorMessage = null;
     notifyListeners();
     try {
-      await _listingService.createListing(listing);
+      _listingService.createListing(listing);
       return true;
     } catch (e) {
       _errorMessage = 'Failed to create listing. Please try again.';
@@ -140,7 +133,6 @@ class ListingProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Update Listing ──────────────────────────────────────────────────────────
   Future<bool> updateListing(String id, Map<String, dynamic> data) async {
     _isSubmitting = true;
     _errorMessage = null;
@@ -157,7 +149,6 @@ class ListingProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Delete Listing ──────────────────────────────────────────────────────────
   Future<bool> deleteListing(String id) async {
     _isSubmitting = true;
     _errorMessage = null;
@@ -174,7 +165,6 @@ class ListingProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Add Review ──────────────────────────────────────────────────────────────
   Future<bool> addReview({
     required String listingId,
     required String userId,
@@ -185,9 +175,10 @@ class ListingProvider extends ChangeNotifier {
     _isSubmitting = true;
     notifyListeners();
     try {
-      // Check for duplicate review
-      final alreadyReviewed =
-          await _reviewService.hasUserReviewed(listingId, userId);
+      final alreadyReviewed = await _reviewService.hasUserReviewed(
+        listingId,
+        userId,
+      );
       if (alreadyReviewed) {
         _errorMessage = 'You have already reviewed this place.';
         return false;
@@ -205,9 +196,7 @@ class ListingProvider extends ChangeNotifier {
 
       await _reviewService.addReview(review);
 
-      // Update listing average rating
-      final ratingData =
-          await _reviewService.getAverageRating(listingId);
+      final ratingData = await _reviewService.getAverageRating(listingId);
       await _listingService.updateListingRating(
         listingId,
         (ratingData['rating'] as double),
@@ -224,7 +213,6 @@ class ListingProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Get Listing by ID ───────────────────────────────────────────────────────
   ListingModel? getListingById(String id) {
     try {
       return _allListings.firstWhere((l) => l.id == id);
@@ -238,7 +226,6 @@ class ListingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Dispose ─────────────────────────────────────────────────────────────────
   @override
   void dispose() {
     _allListingsSub?.cancel();
