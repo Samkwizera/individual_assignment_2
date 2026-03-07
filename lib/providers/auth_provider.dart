@@ -138,7 +138,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final verified = await _authService.reloadAndCheckVerification();
       if (verified) {
-        // Fetch profile separately so a Firestore failure doesn't block navigation.
+        
         try {
           final user = FirebaseAuth.instance.currentUser!;
           _userModel = await _authService.fetchUserProfile(user.uid);

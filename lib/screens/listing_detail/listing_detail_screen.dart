@@ -271,7 +271,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
-                              ),
+                              ),   
                               child: Icon(
                                 kCategoryIcons[_listing.category] ??
                                     Icons.place_rounded,
