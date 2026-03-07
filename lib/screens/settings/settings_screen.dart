@@ -249,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       applicationName: 'Kigali City Directory',
       applicationVersion: '1.0.0',
-      applicationLegalese: '© 2025 Kigali City Directory',
+      applicationLegalese: '© 2026 Kigali City Directory',
       children: const [
         SizedBox(height: 12),
         Text(
