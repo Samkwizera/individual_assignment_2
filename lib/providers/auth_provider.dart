@@ -134,26 +134,28 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> checkEmailVerification() async {
-    _setLoading(true);
     try {
       final verified = await _authService.reloadAndCheckVerification();
       if (verified) {
-        
-        try {
-          final user = FirebaseAuth.instance.currentUser!;
-          _userModel = await _authService.fetchUserProfile(user.uid);
-        } catch (e) {
-          debugPrint('fetchUserProfile error during verification: $e');
-        }
         _status = AuthStatus.authenticated;
         notifyListeners();
+        // Fetch profile in the background — don't block navigation on it
+        _authService
+            .fetchUserProfile(FirebaseAuth.instance.currentUser!.uid)
+            .then((profile) {
+              if (profile != null) {
+                _userModel = profile;
+                notifyListeners();
+              }
+            })
+            .catchError((e) {
+              debugPrint('fetchUserProfile error during verification: $e');
+            });
       }
       return verified;
     } catch (e) {
       debugPrint('checkEmailVerification error: $e');
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 

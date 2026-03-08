@@ -53,7 +53,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-
               Container(
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(20),
@@ -94,25 +93,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: AppTextStyles.heading2,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      user?.email ?? '',
-                      style: AppTextStyles.bodySecondary,
-                    ),
+                    Text(user?.email ?? '', style: AppTextStyles.bodySecondary),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.success.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: AppColors.success.withOpacity(0.4)),
+                          color: AppColors.success.withOpacity(0.4),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: const [
-                          Icon(Icons.verified_rounded,
-                              color: AppColors.success, size: 14),
+                          Icon(
+                            Icons.verified_rounded,
+                            color: AppColors.success,
+                            size: 14,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Verified Account',
@@ -136,7 +138,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
 
-
               _SectionHeader(title: 'Notifications'),
               _SettingsTile(
                 icon: Icons.location_on_rounded,
@@ -155,8 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SettingsTile(
                 icon: Icons.add_location_alt_rounded,
                 title: 'New Listings',
-                subtitle:
-                    'Get notified when new services are added in Kigali',
+                subtitle: 'Get notified when new services are added in Kigali',
                 trailing: Switch.adaptive(
                   value: _newListingNotifications,
                   onChanged: (v) {
@@ -169,8 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SettingsTile(
                 icon: Icons.star_rounded,
                 title: 'Review Notifications',
-                subtitle:
-                    'Get notified when someone reviews your listings',
+                subtitle: 'Get notified when someone reviews your listings',
                 trailing: Switch.adaptive(
                   value: _reviewNotifications,
                   onChanged: (v) {
@@ -180,7 +179,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   activeColor: AppColors.accent,
                 ),
               ),
-
 
               _SectionHeader(title: 'App'),
               _SettingsTile(
@@ -193,9 +191,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.privacy_tip_outlined,
                 title: 'Privacy Policy',
                 subtitle: 'How we handle your data',
-                onTap: () {},
+                onTap: () => _showPrivacyPolicy(context),
               ),
-
 
               _SectionHeader(title: 'Account'),
               _SettingsTile(
@@ -238,6 +235,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
               minimumSize: const Size(80, 40),
             ),
             child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicy(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        title: const Text('Privacy Policy', style: AppTextStyles.heading3),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Data We Collect', style: AppTextStyles.body),
+              SizedBox(height: 6),
+              Text(
+                'We collect your email address and display name when you register, '
+                'and the listing information you submit. We do not sell your personal data.',
+                style: AppTextStyles.bodySecondary,
+              ),
+              SizedBox(height: 14),
+              Text('How We Use Your Data', style: AppTextStyles.body),
+              SizedBox(height: 6),
+              Text(
+                'Your data is used solely to provide and improve the Kigali City Directory '
+                'service, including displaying your listings and enabling account features.',
+                style: AppTextStyles.bodySecondary,
+              ),
+              SizedBox(height: 14),
+              Text('Data Storage', style: AppTextStyles.body),
+              SizedBox(height: 6),
+              Text(
+                'Your data is securely stored using Google Firebase services. '
+                'You may delete your account and all associated data at any time from the Settings screen.',
+                style: AppTextStyles.bodySecondary,
+              ),
+              SizedBox(height: 14),
+              Text('Contact', style: AppTextStyles.body),
+              SizedBox(height: 6),
+              Text(
+                'For any privacy-related questions, please contact us through the app.',
+                style: AppTextStyles.bodySecondary,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -319,11 +369,7 @@ class _SettingsTile extends StatelessWidget {
             color: (iconColor ?? AppColors.accent).withOpacity(0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(
-            icon,
-            color: iconColor ?? AppColors.accent,
-            size: 20,
-          ),
+          child: Icon(icon, color: iconColor ?? AppColors.accent, size: 20),
         ),
         title: Text(
           title,
@@ -335,7 +381,8 @@ class _SettingsTile extends StatelessWidget {
         subtitle: subtitle != null
             ? Text(subtitle!, style: AppTextStyles.caption)
             : null,
-        trailing: trailing ??
+        trailing:
+            trailing ??
             (onTap != null
                 ? const Icon(
                     Icons.arrow_forward_ios_rounded,

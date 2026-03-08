@@ -155,6 +155,10 @@ class ListingProvider extends ChangeNotifier {
     notifyListeners();
     try {
       await _listingService.deleteListing(id);
+      // Immediately remove from both local lists so the UI updates instantly
+      // without waiting for Firestore's real-time stream to catch up.
+      _userListings = _userListings.where((l) => l.id != id).toList();
+      _allListings = _allListings.where((l) => l.id != id).toList();
       return true;
     } catch (e) {
       _errorMessage = 'Failed to delete listing. Please try again.';
